@@ -65,7 +65,7 @@ _chacha_init:
  */
 _chacha_crypt:
     push    {r4, r5, r6, r7, lr}
-    ble     .L_exit
+    /*ble     .L_exit*/
 /* processing block */
     ldr     r5, =_state
     ldr     r3, =_counter
