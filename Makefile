@@ -1,3 +1,9 @@
+REQUIRED_MAKE_VERSION := 4.0
+ifeq ($(filter $(REQUIRED_MAKE_VERSION),$(firstword $(sort $(MAKE_VERSION) $(REQUIRED_MAKE_VERSION)))), $(REQUIRED_MAKE_VERSION))
+else
+$(error Make version $(REQUIRED_MAKE_VERSION) or higher is required, but found $(MAKE_VERSION). linker.ld cannot be generated)
+endif
+
 TOOLSET    ?= arm-none-eabi-
 OUTDIR     ?= build
 FWNAME     ?= firmware
@@ -60,7 +66,7 @@ MLIBS       = $(addprefix $(FWODIR)/lib, $(addsuffix .a, $(MODULES)))
 MDEFS       = USBD_SOF_DISABLED
 
 #compiler flags
-SWCFLAGS    = -O2
+# Add -g option to assembling process to debug assembly code
 FWCFLAGS    = -mthumb -Os -Wall -std=gnu99 -fdata-sections -ffunction-sections
 FWXFLAGS    = -flto
 
