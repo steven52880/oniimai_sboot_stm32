@@ -1,4 +1,4 @@
-﻿/* This file is the part of the STM32 secure bootloader
+/* This file is the part of the STM32 secure bootloader
  *
  * Copyright ©2016 Dmitry Filimonchuk <dmitrystu[at]gmail[dot]com>
  *
@@ -151,6 +151,13 @@
 #endif
 #ifndef DFU_BOOTSTRAP_PIN
 #define DFU_BOOTSTRAP_PIN   1
+#endif
+/* LED port/pin settings. Set GPIOx or _DISABLE */
+#ifndef LED_GPIO
+#define LED_GPIO  GPIOA_BASE
+#endif
+#ifndef LED_PIN
+#define LED_PIN   1
 #endif
 /* Active bootstrap pin logic level. _HIGH, _LOW */
 #ifndef DFU_BOOTSTRAP_LEVEL

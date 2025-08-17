@@ -311,9 +311,54 @@ static void dfu_init (void) {
     usbd_connect(&dfu, 1);
 }
 
+#if defined(LED_GPIO) && LED_GPIO!=_DISABLE && defined(LED_PIN)
+static void led_init() {
+    // Config LED_GPIO clock
+    RCC_TypeDef *rcc = (RCC_TypeDef *)RCC_BASE;
+#if LED_GPIO == GPIOA_BASE
+    rcc->APB2ENR |= RCC_APB2ENR_IOPAEN;
+#elif LED_GPIO == GPIOB_BASE
+    rcc->APB2ENR |= RCC_APB2ENR_IOPBEN;
+#elif LED_GPIO == GPIOC_BASE
+    rcc->APB2ENR |= RCC_APB2ENR_IOPCEN;
+#elif LED_GPIO == GPIOD_BASE
+    rcc->APB2ENR |= RCC_APB2ENR_IOPDEN;
+#elif LED_GPIO == GPIOE_BASE
+    rcc->APB2ENR |= RCC_APB2ENR_IOPEEN;
+#elif LED_GPIO == GPIOF_BASE
+    rcc->APB2ENR |= RCC_APB2ENR_IOPFEN;
+#elif LED_GPIO == GPIOG_BASE
+    rcc->APB2ENR |= RCC_APB2ENR_IOPGEN;
+#endif
+
+    // Config LED_PIN as output
+    GPIO_TypeDef *gpio = (GPIO_TypeDef *)LED_GPIO;
+    gpio->CRH &= ~(0xF << ((LED_PIN - 8) * 4));
+    gpio->CRH |=  (0x1 << ((LED_PIN - 8) * 4));
+    gpio->ODR &= ~(1 << LED_PIN);
+}
+
+static void led_poll() {
+    static uint32_t cnt = 0;
+    const uint32_t range = 100000;
+
+    cnt++;
+    if (cnt >= range) {
+        cnt = 0;
+        GPIO_TypeDef *gpio = (GPIO_TypeDef *)LED_GPIO;
+        gpio->ODR ^= (1 << LED_PIN);
+    }
+}
+#else
+static void led_init() {}
+static void led_poll() {}
+#endif
+
 int main (void) {
     dfu_init();
+    led_init();
     while(1) {
         usbd_poll(&dfu);
+        led_poll();
     }
 }
