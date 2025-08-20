@@ -38,6 +38,8 @@
 #define SCB_VTOR        0x08
 #define SCB_AIRCR       0x0C
 
+#define AFIO_BASE       0x40010000
+
 #if (DFU_APP_START == _AUTO)
     #define _APP_START  __app_start
 #else
@@ -171,6 +173,23 @@ Reset_Handler:
     ldr     r3, [r0, 0x04]      //load reet vector
     bx      r3                  //jump to user_app
 .L_check_boot:
+/* Config AFIO to disable SWD and JTAG if RDP is enabled */
+#if defined(DFU_SEAL_LEVEL) && (DFU_SEAL_LEVEL != 0)
+    /* Enable AFIO clock */
+    ldr     r5, = RCC_BASE
+    ldr     r2, [r5, RCC_APB2ENR]
+    orrs    r2, #0x01 << 0x00    // AFIOEN
+    str     r2, [r5, RCC_APB2ENR]
+
+    /* Config AFIO.MAPR */
+    ldr     r1, =AFIO_BASE       // AFIO base address
+    ldr     r2, [r1, #0x04]      // Read MAPR register
+    bic     r2, r2, #(0x7 << 24) // Clear SWJ_CFG bits
+    orr     r2, r2, #(0x4 << 24) // Set SWJ_CFG to 0b100 (Disable JTAG, Enable SWD)
+    movs    r0, #0
+    str     r0, [r1, #0x04]      // Write zero to MAPR
+    str     r2, [r1, #0x04]      // Write back to MAPR
+#endif
 /* Setup clock 48Mhz HSI PLL for USB */
 /* set flash latency 1 */
     ldr     r3, = FLASH_R_BASE
