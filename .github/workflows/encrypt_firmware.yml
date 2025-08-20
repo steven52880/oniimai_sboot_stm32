@@ -1,7 +1,7 @@
 name: Encrypt firmware
 on:
   repository_dispatch:
-    types: [encrypt_firmware]
+    types: [firmware_encrypt]
 
 env:
   DFU_USER_CONFIG: oniimaiv3_config.h
@@ -9,13 +9,12 @@ env:
   MACRO_NAME_IV: ACT_SECRET_IV
 
 jobs:
-  build:
+  encrypt:
     name: Build crypter and encrypt
     env:
       CMSIS: CMSIS_5
     runs-on: ubuntu-latest
     steps:
-
     - name: Install GNU Arm Embedded Toolchain
       uses: carlosperate/arm-none-eabi-gcc-action@v1.10.1
 
@@ -39,10 +38,10 @@ jobs:
       uses: dawidd6/action-download-artifact@v3
       with:
         repo: ${{ github.event.client_payload.repo }}
-        path: ./firmwares
+        path: ${{ github.workspace }}/firmwares
         run_id: ${{ github.event.client_payload.run_id }}
         name: ${{ github.event.client_payload.artifact }}
-        github_token: ${{ secrets.GITHUB_TOKEN }}
+        github_token: ${{ secrets.ENCRYPT_PAT }}
 
     - name: Encrypt firmware
       run: |
@@ -57,3 +56,17 @@ jobs:
       with:
         name: ${{ github.event.client_payload.artifact }}
         path: ${{ github.workspace }}/encrypted/*.bin
+        
+    - name: Trigger workflow after encryption
+      uses: peter-evans/repository-dispatch@v3
+      with:
+        token: ${{ secrets.ENCRYPT_PAT }}
+        repository: ${{ github.event.client_payload.repo }}
+        event-type: firmware_encrypt_done
+        client-payload: |
+          {
+            "repo": "${{ github.repository }}",
+            "run_id": ${{ github.run_id }},
+            "artifact": "${{ github.event.client_payload.artifact }}",
+            "tag": "${{ github.event.client_payload.tag }}"
+          }
