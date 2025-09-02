@@ -19,6 +19,7 @@
 #define DFU_STR_PRODUCT "onii-mai bootloader"
 #define DFU_DSC_CONFIG _ENABLE
 #define DFU_STR_CONFIG "DFU"
+#define DFU_WCID _ENABLE
 
 #define DFU_BOOTSTRAP_GPIO GPIOB
 #define DFU_BOOTSTRAP_PIN 8
