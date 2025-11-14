@@ -421,6 +421,9 @@ seal_flash:
     bcc     .L_seal
     bx      lr
 .L_seal:
+/* save user data */
+    ldr     r0, = FLASH_OP_BASE
+    ldr     r5, [r0, 0x04]
 /* unlocking flash */
     ldr     r1, = FLASH_KEY0
     ldr     r2, = FLASH_KEY1
@@ -430,17 +433,25 @@ seal_flash:
     str     r1, [r3, FLASH_OPTKEYR]
     str     r2, [r3, FLASH_OPTKEYR]
 /* erasing OPTION data. */
-    movs    r1, 0x20               // OPTER
+    ldr     r1, [r3, FLASH_CR]
+    orr     r1, 0x20               // set OPTER
     str     r1, [r3, FLASH_CR]
-    movs    r1, 0x60               // START + OPTER
+    orr     r1, 0x60               // set START
     str     r1, [r3, FLASH_CR]
     bl      wait_prog_done
+    bic     r1, 0x20               // clear OPTER
 /* set RDP */
-    movs    r1, 0x10
+    orr     r1, 0x10               // set OPTPG
     str     r1, [r3, FLASH_CR]
     ldr     r0, = FLASH_OP_BASE
     ldr     r1, = 0x33CC
     strh    r1, [r0, 0x00]
+    bl      wait_prog_done
+/* restore user data */
+    strh    r5, [r0, 0x04]
+    bl      wait_prog_done
+    lsr     r5, 16
+    strh    r5, [r0, 0x06]
     bl      wait_prog_done
 /* reset */
     ldr     r3, = SCB
