@@ -1,0 +1,89 @@
+{
+  "version": 3,
+  "cmakeMinimumRequired": { "major": 3, "minor": 21, "patch": 0 },
+  "configurePresets": [
+    {
+      "name": "base",
+      "hidden": true,
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/${presetName}",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "MinSizeRel"
+      }
+    },
+    {
+      "name": "fw-base",
+      "hidden": true,
+      "inherits": "base",
+      "toolchainFile": "${sourceDir}/cmake/toolchains/arm-none-eabi.cmake",
+      "cacheVariables": {
+        "SBOOT_TARGET": "firmware"
+      }
+    },
+    {
+      "name": "host-base",
+      "hidden": true,
+      "inherits": "base",
+      "cacheVariables": {
+        "SBOOT_TARGET": "host"
+      }
+    },
+    {
+      "name": "oniimai-v3",
+      "displayName": "Firmware: oniimai v3 (STM32F103xC)",
+      "inherits": "fw-base",
+      "cacheVariables": {
+        "SBOOT_MCU": "stm32f103xc",
+        "DFU_USER_CONFIG": "oniimaiv3_config.h"
+      }
+    },
+    {
+      "name": "stm32f103xc",
+      "displayName": "Firmware: STM32F103xC, default config.h",
+      "inherits": "fw-base",
+      "cacheVariables": {
+        "SBOOT_MCU": "stm32f103xc"
+      }
+    },
+    {
+      "name": "stm32f103x8",
+      "displayName": "Firmware: STM32F103x8, default config.h",
+      "inherits": "fw-base",
+      "cacheVariables": {
+        "SBOOT_MCU": "stm32f103x8"
+      }
+    },
+    {
+      "name": "host-oniimai-v3",
+      "displayName": "Host tools: fwcrypt / cipher_test for oniimai v3",
+      "inherits": "host-base",
+      "cacheVariables": {
+        "DFU_USER_CONFIG": "oniimaiv3_config.h"
+      }
+    },
+    {
+      "name": "host",
+      "displayName": "Host tools: fwcrypt / cipher_test, default config.h",
+      "inherits": "host-base"
+    }
+  ],
+  "buildPresets": [
+    { "name": "oniimai-v3", "configurePreset": "oniimai-v3" },
+    { "name": "stm32f103xc", "configurePreset": "stm32f103xc" },
+    { "name": "stm32f103x8", "configurePreset": "stm32f103x8" },
+    { "name": "host-oniimai-v3", "configurePreset": "host-oniimai-v3" },
+    { "name": "host", "configurePreset": "host" }
+  ],
+  "testPresets": [
+    {
+      "name": "host-oniimai-v3",
+      "configurePreset": "host-oniimai-v3",
+      "output": { "outputOnFailure": true }
+    },
+    {
+      "name": "host",
+      "configurePreset": "host",
+      "output": { "outputOnFailure": true }
+    }
+  ]
+}

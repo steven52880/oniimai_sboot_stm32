@@ -1,0 +1,55 @@
+# Resolves SBOOT_MCU into FW_CPU / FW_STARTUP / FW_DEFS and generates the
+# linker script (replaces the per-MCU Makefile rules and ldscript.mk).
+
+include(${CMAKE_CURRENT_LIST_DIR}/mcu_targets.cmake)
+
+set(SBOOT_MCU "stm32f103xc" CACHE STRING "Target MCU (see cmake/mcu_targets.cmake)")
+
+# Plain `make` in the Makefile (STM32L052x8 without USBD_ASM_DRIVER)
+set(_mcu_default "default|-mcpu=cortex-m0plus -mfloat-abi=soft|mcu/stm32l0xx.S|STM32L0,STM32L052xx|ROMLEN=64K,RAMLEN=8K")
+
+set(_mcu_names default)
+foreach(_e IN LISTS SBOOT_MCU_TABLE)
+    string(REGEX MATCH "^[^|]+" _n "${_e}")
+    list(APPEND _mcu_names ${_n})
+endforeach()
+set_property(CACHE SBOOT_MCU PROPERTY STRINGS ${_mcu_names})
+
+set(_mcu_entry "")
+foreach(_e IN LISTS _mcu_default SBOOT_MCU_TABLE)
+    if(_e MATCHES "^${SBOOT_MCU}\\|")
+        set(_mcu_entry "${_e}")
+    endif()
+endforeach()
+if(NOT _mcu_entry)
+    message(FATAL_ERROR "Unknown SBOOT_MCU '${SBOOT_MCU}'. Valid: ${_mcu_names}")
+endif()
+
+string(REPLACE "|" ";" _f "${_mcu_entry}")
+list(GET _f 1 _cpu)
+list(GET _f 2 _startup)
+list(GET _f 3 _defs)
+list(GET _f 4 _ldparams)
+separate_arguments(FW_CPU UNIX_COMMAND "${_cpu}")
+set(FW_STARTUP "${PROJECT_SOURCE_DIR}/${_startup}")
+string(REPLACE "," ";" FW_DEFS "${_defs}")
+
+# Linker script parameters (defaults from ldscript.mk)
+set(ROMSTART 0x08000000)
+set(ROMLEN   256K)
+set(RAMSTART 0x20000000)
+set(RAMLEN   32K)
+set(APPALIGN 0x0800)
+string(REPLACE "," ";" _ldparams "${_ldparams}")
+foreach(_p IN LISTS _ldparams)
+    string(REPLACE "=" ";" _kv "${_p}")
+    list(GET _kv 0 _k)
+    list(GET _kv 1 _val)
+    set(${_k} ${_val})
+endforeach()
+set(FW_LDSCRIPT "${CMAKE_BINARY_DIR}/script.ld")
+configure_file(${CMAKE_CURRENT_LIST_DIR}/script.ld.in "${FW_LDSCRIPT}" @ONLY)
+
+message(STATUS "sboot MCU      : ${SBOOT_MCU} (${FW_CPU})")
+message(STATUS "sboot defines  : ${FW_DEFS}")
+message(STATUS "sboot memory   : ROM ${ROMSTART}/${ROMLEN}, RAM ${RAMSTART}/${RAMLEN}, APPALIGN ${APPALIGN}")

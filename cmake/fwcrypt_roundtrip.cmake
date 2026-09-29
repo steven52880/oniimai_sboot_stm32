@@ -1,0 +1,16 @@
+# ctest helper: encrypt INPUT with FWCRYPT, decrypt it back and compare.
+set(_enc "${WORKDIR}/roundtrip_enc.bin")
+set(_dec "${WORKDIR}/roundtrip_dec.bin")
+
+execute_process(COMMAND "${FWCRYPT}" -e -i "${INPUT}" -o "${_enc}" RESULT_VARIABLE _r)
+if(_r)
+    message(FATAL_ERROR "fwcrypt -e failed: ${_r}")
+endif()
+execute_process(COMMAND "${FWCRYPT}" -d -i "${_enc}" -o "${_dec}" RESULT_VARIABLE _r)
+if(_r)
+    message(FATAL_ERROR "fwcrypt -d failed: ${_r}")
+endif()
+execute_process(COMMAND "${CMAKE_COMMAND}" -E compare_files "${INPUT}" "${_dec}" RESULT_VARIABLE _r)
+if(_r)
+    message(FATAL_ERROR "decrypted file differs from input")
+endif()
