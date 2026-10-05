@@ -38,6 +38,15 @@
       }
     },
     {
+      "name": "norondx",
+      "displayName": "Firmware: Noron DX (STM32F103xC)",
+      "inherits": "fw-base",
+      "cacheVariables": {
+        "SBOOT_MCU": "stm32f103xc",
+        "DFU_USER_CONFIG": "norondx_config.h"
+      }
+    },
+    {
       "name": "stm32f103xc",
       "displayName": "Firmware: STM32F103xC, default config.h",
       "inherits": "fw-base",
@@ -62,6 +71,14 @@
       }
     },
     {
+      "name": "host-norondx",
+      "displayName": "Host tools: fwcrypt / cipher_test for Noron DX",
+      "inherits": "host-base",
+      "cacheVariables": {
+        "DFU_USER_CONFIG": "norondx_config.h"
+      }
+    },
+    {
       "name": "host",
       "displayName": "Host tools: fwcrypt / cipher_test, default config.h",
       "inherits": "host-base"
@@ -69,6 +86,8 @@
   ],
   "buildPresets": [
     { "name": "oniimai-v3", "configurePreset": "oniimai-v3" },
+    { "name": "norondx", "configurePreset": "norondx" },
+    { "name": "host-norondx", "configurePreset": "host-norondx" },
     { "name": "stm32f103xc", "configurePreset": "stm32f103xc" },
     { "name": "stm32f103x8", "configurePreset": "stm32f103x8" },
     { "name": "host-oniimai-v3", "configurePreset": "host-oniimai-v3" },
@@ -78,6 +97,11 @@
     {
       "name": "host-oniimai-v3",
       "configurePreset": "host-oniimai-v3",
+      "output": { "outputOnFailure": true }
+    },
+    {
+      "name": "host-norondx",
+      "configurePreset": "host-norondx",
       "output": { "outputOnFailure": true }
     },
     {
